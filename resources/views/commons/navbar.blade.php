@@ -10,9 +10,9 @@
         <div class="collapse navbar-collapse" id="nav-bar">
             <ul class = "navbar-nav mr-auto"></ul>
             <ul clasas = "navbar-nav">
-                {{--ユーザー登録ページへのリンク}}
+                {{--ユーザー登録ページへのリンク--}}
                 <li class ="nav-item"><a href="#" class="nav-link">Signup</a></li>
-                {{--ログインページへのリンク}}
+                {{--ログインページへのリンク--}}
                 <li class = "nav-item"><a href="#" class="nav-link">Long</a></li>
             </ul>
         </div>
