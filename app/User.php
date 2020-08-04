@@ -61,13 +61,25 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'user_follow', 'follow_id', 'user_id')->withTimestamps();
     }
     
+    
+       /**
+     * このユーザがいいねしている投稿。（ micropostsモデルとの関係を定義）
+     * favorite中間テーブル
+     */
+    public function favoritings()
+    {
+        return $this->belongsToMany(Micropost::class, 'favorite', 'user_id', 'micropost_id')->withTimestamps();
+    }
+    
   /**
      * このユーザに関係するモデルの件数をロードする。
      */
     public function loadRelationshipCounts()
     {
-        $this->loadCount(['microposts', 'followings', 'followers']);
+        $this->loadCount(['microposts', 'followings', 'followers', 'favoritings']);
     }
+    
+  
     
      /**
      * $userIdで指定されたユーザをフォローする。
@@ -138,5 +150,61 @@ class User extends Authenticatable
         $userIds[] = $this->id;
         // それらのユーザが所有する投稿に絞り込む
         return Micropost::whereIn('user_id', $userIds);
+    }
+    
+    
+    /* ここからいいね機能↓ */
+    
+   
+    
+     /**
+     * $micropostsIdで指定された投稿をいいねする。
+     */
+    public function favorite($micropostsId)
+    {
+        // すでにいいねしているかの確認
+        $exist = $this->is_favoriting($micropostsId);
+
+        if ($exist) {
+            // すでにいいねしていれば何もしない
+            return false;
+        } else {
+            // 未いいねであればいいねする
+            $this->favoritings()->attach($micropostsId);
+            return true;
+        }
+    }
+
+    /**
+     * $ｍicropostsIdで指定された投稿をアンフォローする。
+     *
+     * @param  int  $micropostsId
+     * @return bool
+     */
+    public function unfavorite($micropostsId)
+    {
+        // すでにいいねしているかの確認
+        $exist = $this->is_favoriting($micropostsId);
+
+        if ($exist) {
+            // すでにいいねしていればフォローを外す
+            $this->favoritings()->detach($micropostsId);
+            return true;
+        } else {
+            // 未いいねであれば何もしない
+            return false;
+        }
+    }
+
+    /**
+     * 指定された$micropostsIdの投稿をこのユーザがいいね中であるか調べる。いいね中ならtrueを返す。
+     *
+     * @param  int $micropostsId
+     * @return bool
+     */
+    public function is_favoriting($micropostsId)
+    {
+        // いいね中の投稿の中に $micropostsIdのものが存在するか
+        return $this->favoritings()->where('micropost_id', $micropostsId)->exists();
     }
 }
